@@ -12,10 +12,13 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Cargar llave SSH
-        uses: webfactory/ssh-agent@v0.9.1
-        with:
-          ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
-
       - name: Desplegar en VPS
-        run: ssh -o StrictHostKeyChecking=accept-new ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "bash /var/www/guille/deploy.sh"
+        env:
+          DEPLOY_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+        run: |
+          install -d -m 700 "$RUNNER_TEMP/guille-ssh"
+          printf '%s\n' "$DEPLOY_KEY" > "$RUNNER_TEMP/guille-ssh/key"
+          chmod 600 "$RUNNER_TEMP/guille-ssh/key"
+          ssh -i "$RUNNER_TEMP/guille-ssh/key" -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new "$VPS_USER@$VPS_HOST" "bash /var/www/guille/deploy.sh"
