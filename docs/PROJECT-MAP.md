@@ -34,7 +34,7 @@ Tabla `leads`: identidad de la solicitud, contacto, municipio, servicio, mensaje
 - Repo: `Ferolicas/Guille`.
 - VPS: `/var/www/guille`.
 - PM2: `guille`, puerto `4011`.
-- Dominio Caddy: `guilloguambi.com` y redirección de `www` al dominio canónico.
+- Dominio Caddy: `guilloguambi.com`, redirección de `www` al dominio canónico y rechazo en proxy de cabeceras `Next-Action` (la app no usa Server Actions).
 - Deploy: push a `main` → GitHub Actions → SSH → `deploy.sh`.
 
 ## Variables
