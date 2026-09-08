@@ -13,7 +13,7 @@ import { FloatingActions, QuoteDialog } from "@/components/ContactForm";
 import { PortfolioGallery } from "@/components/PortfolioGallery";
 import { Reveal } from "@/components/Reveal";
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
-import { getGalleryItems } from "@/lib/gallery";
+import { getPublicGalleryItems } from "@/lib/gallery";
 import { generalService, services, situations } from "@/lib/service-catalog";
 
 export const dynamic = "force-dynamic";
@@ -40,6 +40,14 @@ function JsonLd() {
     name: "Guillo Guambi",
     url: "https://guilloguambi.com",
     telephone: "+34662569563",
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: "Carrer de Navata",
+      addressLocality: "Badalona",
+      addressRegion: "Barcelona",
+      addressCountry: "ES",
+    },
+    hasMap: "https://www.google.com/maps/dir/?api=1&destination=Carrer%20de%20Navata%2C%20Badalona&travelmode=driving",
     areaServed: ["Barcelona", "Área metropolitana de Barcelona"],
     description: "Reformas integrales, restauración, saneado, pladur, pintura, cocinas y baños.",
     sameAs: ["https://www.tiktok.com/@guilloguambi"],
@@ -48,7 +56,7 @@ function JsonLd() {
 }
 
 export default async function HomePage() {
-  const gallery = await getGalleryItems();
+  const gallery = await getPublicGalleryItems();
   const phoneDisplay = process.env.NEXT_PUBLIC_PHONE_DISPLAY?.trim() || "662 569 563";
   const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER?.replace(/\D/g, "") || "34662569563";
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent("Hola, quiero mas informacion")}`;
@@ -58,7 +66,7 @@ export default async function HomePage() {
       <JsonLd />
       <header className="site-header">
         <div className="shell header-inner">
-          <Brand />
+          <Brand priority />
           <nav className="desktop-nav" aria-label="Navegación principal">
             <a href="#diagnostico">Qué necesitas</a>
             <a href="#servicios">Servicios</a>
@@ -123,7 +131,7 @@ export default async function HomePage() {
 
         <section className="portfolio-section" id="caso-real">
           <div className="shell">
-            <Reveal><div className="portfolio-heading"><div><p className="eyebrow light"><span /> Ver cómo trabajo</p><h2>Antes, después<br />y todo lo que cambia en medio.</h2></div><p>Cada proyecto habla por sus acabados, pero también por lo que no se ve: diagnóstico, preparación y oficio. Aquí podrás comparar el punto de partida con el resultado final de cada intervención.</p></div></Reveal>
+            <Reveal><div className="portfolio-heading"><div><p className="eyebrow light"><span /> Ver cómo trabajo</p><h2>Obras, procesos<br />y resultados reales.</h2></div><p>Recorre trabajos documentados durante la obra y al finalizarla. Cuando un proyecto tenga dos piezas, podrás alternar entre el antes y el después para comparar el cambio.</p></div></Reveal>
             <PortfolioGallery items={gallery} />
           </div>
         </section>
@@ -153,7 +161,7 @@ export default async function HomePage() {
       </main>
 
       <footer className="site-footer">
-        <div className="shell footer-grid"><div><Brand inverse /><p>Reformas y restauración con criterio, trato directo y atención al detalle.</p></div><div><span className="footer-label">Explorar</span><a href="#diagnostico">Qué necesitas</a><a href="#servicios">Servicios</a><a href="#caso-real">Trabajos</a><a href="#proceso">Proceso</a></div><div><span className="footer-label">Contacto</span><a href={`tel:+34${phoneDisplay.replace(/\D/g, "")}`}>{phoneDisplay}</a><a href={whatsappUrl} target="_blank" rel="noreferrer">WhatsApp</a><a href="https://www.tiktok.com/@guilloguambi" target="_blank" rel="noreferrer">TikTok @guilloguambi</a><a href="/panel" className="panel-footer-link">Panel privado</a></div></div>
+        <div className="shell footer-grid"><div><Brand inverse /><p>Reformas y restauración con criterio, trato directo y atención al detalle.</p></div><div><span className="footer-label">Explorar</span><a href="#diagnostico">Qué necesitas</a><a href="#servicios">Servicios</a><a href="#caso-real">Trabajos</a><a href="#proceso">Proceso</a></div><div><span className="footer-label">Contacto</span><a href={`tel:+34${phoneDisplay.replace(/\D/g, "")}`}>{phoneDisplay}</a><a href={whatsappUrl} target="_blank" rel="noreferrer">WhatsApp</a><a href="https://www.tiktok.com/@guilloguambi" target="_blank" rel="noreferrer">TikTok @guilloguambi</a><a href="https://www.google.com/maps/dir/?api=1&destination=Carrer%20de%20Navata%2C%20Badalona&travelmode=driving" target="_blank" rel="noreferrer">Carrer de Navata · Badalona</a><a href="/panel" className="panel-footer-link">Panel privado</a></div></div>
         <div className="shell footer-bottom"><span>© 2026 Guillo Guambi</span><span>Trabajo real. Comunicación directa.</span></div>
       </footer>
 

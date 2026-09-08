@@ -11,6 +11,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
+import Image from "next/image";
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent, type MouseEvent as ReactMouseEvent } from "react";
 import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 import { findService, generalService, type ServiceCatalogItem } from "@/lib/service-catalog";
@@ -176,7 +177,7 @@ export function QuoteDialog() {
     <div className="quote-modal-backdrop" onMouseDown={closeFromBackdrop}>
       <div className="quote-modal" role="dialog" aria-modal="true" aria-labelledby="quote-modal-title" ref={dialogRef}>
         <header className="quote-modal-header">
-          <div className="quote-modal-brand"><span>G</span><div><strong>GUILLO GUAMBI</strong><small>VALORACIÓN DE PROYECTO</small></div></div>
+          <div className="quote-modal-brand"><Image src="/images/brand/logo-guillo.png" alt="Guillo Guambi" width={720} height={425} /><small>VALORACIÓN DE PROYECTO</small></div>
           <button className="icon-button" type="button" onClick={() => setOpen(false)} disabled={state.status === "sending"} aria-label="Cerrar formulario"><X size={20} /></button>
         </header>
 
@@ -261,6 +262,7 @@ export function FloatingActions() {
       <div className="social-float" aria-label="Contacto y redes sociales">
         <a href="https://wa.me/34662569563?text=Hola%2C%20quiero%20mas%20informacion" target="_blank" rel="noreferrer" aria-label="Escribir por WhatsApp"><WhatsAppIcon size={21} aria-hidden="true" /></a>
         <a href="https://www.tiktok.com/@guilloguambi" target="_blank" rel="noreferrer" aria-label="Ver TikTok de Guillo Guambi"><Music2 size={20} /></a>
+        <a className="maps-action" href="https://www.google.com/maps/dir/?api=1&destination=Carrer%20de%20Navata%2C%20Badalona&travelmode=driving" target="_blank" rel="noreferrer" aria-label="Cómo llegar a Carrer de Navata en Badalona"><Image src="/images/brand/google-maps.png" width={256} height={256} alt="Google Maps" /><span><strong>Carrer de Navata</strong><small>Badalona · Cómo llegar</small></span></a>
       </div>
       <button className={`mobile-cta ${showValuation ? "mobile-cta-visible" : ""}`} type="button" onClick={() => dispatchQuote()} aria-hidden={!showValuation} tabIndex={showValuation ? 0 : -1}>
         <Check size={17} /> Pedir valoración
