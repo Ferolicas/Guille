@@ -5,7 +5,6 @@ import {
   Check,
   ChevronRight,
   ClipboardCheck,
-  MessageCircle,
   Phone,
   ShieldCheck,
 } from "lucide-react";
@@ -13,6 +12,7 @@ import { Brand } from "@/components/Brand";
 import { FloatingActions, QuoteDialog } from "@/components/ContactForm";
 import { PortfolioGallery } from "@/components/PortfolioGallery";
 import { Reveal } from "@/components/Reveal";
+import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 import { getGalleryItems } from "@/lib/gallery";
 import { generalService, services, situations } from "@/lib/service-catalog";
 
@@ -141,7 +141,7 @@ export default async function HomePage() {
             <div className="contact-methods">
               <a href="#contacto" data-quote-service={generalService.slug}><ClipboardCheck size={22} /><div><span>Valoración con archivos</span><strong>Contar mi proyecto</strong><small>Dos pasos · fotos y vídeos opcionales</small></div><ArrowRight size={18} /></a>
               <a href={`tel:+34${phoneDisplay.replace(/\D/g, "")}`}><Phone size={22} /><div><span>Llamar directamente</span><strong>{phoneDisplay}</strong><small>Barcelona y área metropolitana</small></div><ArrowRight size={18} /></a>
-              <a href={whatsappUrl} target="_blank" rel="noreferrer"><MessageCircle size={22} /><div><span>WhatsApp</span><strong>Escribir ahora</strong><small>Mensaje preparado para empezar</small></div><ArrowRight size={18} /></a>
+              <a href={whatsappUrl} target="_blank" rel="noreferrer"><WhatsAppIcon size={22} aria-hidden="true" /><div><span>WhatsApp</span><strong>Escribir ahora</strong><small>Mensaje preparado para empezar</small></div><ArrowRight size={18} /></a>
             </div>
             <div className="contact-privacy"><ShieldCheck size={19} /><p><strong>Tus archivos son privados.</strong> Se comprimen, se guardan fuera de la web pública y solo Guillo puede abrirlos desde el panel.</p></div>
           </div>

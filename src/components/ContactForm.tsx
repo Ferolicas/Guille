@@ -7,12 +7,12 @@ import {
   CheckCircle2,
   FilePlus2,
   LoaderCircle,
-  MessageCircle,
   Music2,
   Trash2,
   X,
 } from "lucide-react";
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent, type MouseEvent as ReactMouseEvent } from "react";
+import { WhatsAppIcon } from "@/components/WhatsAppIcon";
 import { findService, generalService, type ServiceCatalogItem } from "@/lib/service-catalog";
 
 type SubmitState =
@@ -259,7 +259,7 @@ export function FloatingActions() {
   return (
     <>
       <div className="social-float" aria-label="Contacto y redes sociales">
-        <a href="https://wa.me/34662569563?text=Hola%2C%20quiero%20mas%20informacion" target="_blank" rel="noreferrer" aria-label="Escribir por WhatsApp"><MessageCircle size={20} /></a>
+        <a href="https://wa.me/34662569563?text=Hola%2C%20quiero%20mas%20informacion" target="_blank" rel="noreferrer" aria-label="Escribir por WhatsApp"><WhatsAppIcon size={21} aria-hidden="true" /></a>
         <a href="https://www.tiktok.com/@guilloguambi" target="_blank" rel="noreferrer" aria-label="Ver TikTok de Guillo Guambi"><Music2 size={20} /></a>
       </div>
       <button className={`mobile-cta ${showValuation ? "mobile-cta-visible" : ""}`} type="button" onClick={() => dispatchQuote()} aria-hidden={!showValuation} tabIndex={showValuation ? 0 : -1}>
