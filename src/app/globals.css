@@ -201,10 +201,10 @@ button, input, select, textarea { font: inherit; }
   .brand strong { font-size: 14px; }
   .site-header .button-small { padding-inline: 12px; min-height: 37px; font-size: 11px; }
   .site-header .button-small svg { display: none; }
-  .hero { height: auto; min-height: 740px; padding: 120px 0 84px; align-items: end; }
+  .hero { height: auto; min-height: 740px; padding: 66px 0 84px; align-items: start; }
   .hero-media img { object-position: 63% center; }
   .hero-shade { background: linear-gradient(0deg, rgba(14,14,12,.97) 5%, rgba(14,14,12,.78) 58%, rgba(14,14,12,.32) 100%); }
-  .hero-grid { padding-top: 160px; }
+  .hero-grid { padding-top: 10px; }
   .hero h1 { font-size: clamp(2.75rem, 13.3vw, 4rem); }
   .hero-lead { font-size: 16px; line-height: 1.53; }
   .hero-actions { display: grid; }
