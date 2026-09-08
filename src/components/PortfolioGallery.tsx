@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, ArrowUpRight, Image as ImageIcon, Play, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, ArrowUpRight, Expand, Image as ImageIcon, Play, X } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 
@@ -18,6 +18,17 @@ export type GalleryItem = {
   description: string;
   media: GalleryMedia[];
   sourceUrl?: string;
+};
+
+type ViewerEntry = {
+  title: string;
+  description: string;
+  media: GalleryMedia;
+};
+
+type OpenViewer = {
+  kind: "photo" | "video";
+  index: number;
 };
 
 function labelText(media: GalleryMedia) {
@@ -38,25 +49,30 @@ function motionPreference() {
 
 export function PortfolioGallery({ items }: { items: GalleryItem[] }) {
   const railRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
   const [activeKind, setActiveKind] = useState<"photo" | "video">("photo");
   const [activeMedia, setActiveMedia] = useState<Record<string, number>>({});
-  const [openVideoIndex, setOpenVideoIndex] = useState<number | null>(null);
+  const [openViewer, setOpenViewer] = useState<OpenViewer | null>(null);
   const allowMotion = useSyncExternalStore(subscribeToMotionPreference, motionPreference, () => false);
   const photoItems = useMemo(() => items.filter((item) => !item.media.some((media) => media.type === "video")), [items]);
   const videoItems = useMemo(() => items.filter((item) => item.media.some((media) => media.type === "video")), [items]);
   const visibleItems = activeKind === "photo" ? photoItems : videoItems;
-  const videos = useMemo(() => videoItems.flatMap((item) => item.media
-    .filter((media) => media.type === "video")
-    .map((media) => ({
-      key: `${item.id || item.slot}-${media.src}`,
-      title: item.title || `Trabajo ${item.slot}`,
-      description: item.description,
-      media,
-    }))), [videoItems]);
-  const openVideo = openVideoIndex === null ? null : videos[openVideoIndex];
+  const viewerEntries = useMemo(() => items.reduce<{ photo: ViewerEntry[]; video: ViewerEntry[] }>((entries, item) => {
+    item.media.forEach((media) => {
+      entries[media.type === "image" ? "photo" : "video"].push({
+        title: item.title || `Trabajo ${item.slot}`,
+        description: item.description,
+        media,
+      });
+    });
+    return entries;
+  }, { photo: [], video: [] }), [items]);
+  const openEntry = openViewer ? viewerEntries[openViewer.kind][openViewer.index] : null;
+  const isViewerOpen = openViewer !== null;
 
   useEffect(() => {
-    if (!allowMotion || openVideoIndex !== null) return;
+    if (!allowMotion || isViewerOpen) return;
     const timer = window.setInterval(() => {
       if (document.hidden) return;
       setActiveMedia((current) => Object.fromEntries(items.map((item) => {
@@ -65,23 +81,31 @@ export function PortfolioGallery({ items }: { items: GalleryItem[] }) {
       })));
     }, 4200);
     return () => window.clearInterval(timer);
-  }, [allowMotion, items, openVideoIndex]);
+  }, [allowMotion, isViewerOpen, items]);
 
   useEffect(() => {
-    if (openVideoIndex === null) return;
+    if (!isViewerOpen) return;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    closeButtonRef.current?.focus();
     function closeOnEscape(event: KeyboardEvent) {
-      if (event.key === "Escape") setOpenVideoIndex(null);
-      if (event.key === "ArrowLeft") setOpenVideoIndex((current) => current === null ? null : (current - 1 + videos.length) % videos.length);
-      if (event.key === "ArrowRight") setOpenVideoIndex((current) => current === null ? null : (current + 1) % videos.length);
+      if (event.key === "Escape") setOpenViewer(null);
+      if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+        const direction = event.key === "ArrowLeft" ? -1 : 1;
+        setOpenViewer((current) => {
+          if (!current) return null;
+          const length = viewerEntries[current.kind].length;
+          return length ? { ...current, index: (current.index + direction + length) % length } : null;
+        });
+      }
     }
     window.addEventListener("keydown", closeOnEscape);
     return () => {
       document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", closeOnEscape);
+      previousFocusRef.current?.focus();
     };
-  }, [openVideoIndex, videos.length]);
+  }, [isViewerOpen, viewerEntries]);
 
   function move(direction: -1 | 1) {
     const rail = railRef.current;
@@ -91,17 +115,23 @@ export function PortfolioGallery({ items }: { items: GalleryItem[] }) {
 
   function selectKind(kind: "photo" | "video") {
     setActiveKind(kind);
-    setOpenVideoIndex(null);
+    setOpenViewer(null);
     window.requestAnimationFrame(() => railRef.current?.scrollTo({ left: 0, behavior: "smooth" }));
   }
 
-  function showVideo(src: string) {
-    const index = videos.findIndex((video) => video.media.src === src);
-    if (index >= 0) setOpenVideoIndex(index);
+  function showMedia(kind: "photo" | "video", src: string) {
+    const index = viewerEntries[kind].findIndex((entry) => entry.media.src === src);
+    if (index < 0) return;
+    previousFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    setOpenViewer({ kind, index });
   }
 
-  function moveVideo(direction: -1 | 1) {
-    setOpenVideoIndex((current) => current === null ? null : (current + direction + videos.length) % videos.length);
+  function moveViewer(direction: -1 | 1) {
+    setOpenViewer((current) => {
+      if (!current) return null;
+      const length = viewerEntries[current.kind].length;
+      return length ? { ...current, index: (current.index + direction + length) % length } : null;
+    });
   }
 
   return (
@@ -125,9 +155,14 @@ export function PortfolioGallery({ items }: { items: GalleryItem[] }) {
           return (
             <article className={`gallery-card ${current ? "gallery-card-ready" : "gallery-card-empty"}`} key={itemKey}>
               <div className="gallery-media">
-                {current?.type === "image" && <Image src={current.src} alt={item.title || `Trabajo ${item.slot}`} fill sizes="(max-width: 640px) 45vw, 28vw" unoptimized />}
+                {current?.type === "image" && (
+                  <button className="gallery-photo-trigger" type="button" onClick={() => showMedia("photo", current.src)} aria-label={`Ampliar ${item.title || `trabajo ${item.slot}`}`}>
+                    <Image src={current.src} alt={item.title || `Trabajo ${item.slot}`} fill sizes="(max-width: 640px) 45vw, 28vw" unoptimized />
+                    <span aria-hidden="true"><Expand size={14} /> Ver foto</span>
+                  </button>
+                )}
                 {current?.type === "video" && (
-                  <button className="gallery-video-trigger" type="button" onClick={() => showVideo(current.src)} aria-label={`Reproducir ${item.title || `trabajo ${item.slot}`}`}>
+                  <button className="gallery-video-trigger" type="button" onClick={() => showMedia("video", current.src)} aria-label={`Reproducir ${item.title || `trabajo ${item.slot}`}`}>
                     {current.poster ? <Image src={current.poster} alt="" fill sizes="(max-width: 640px) 45vw, 28vw" unoptimized /> : <video src={current.src} muted playsInline preload="metadata" />}
                     <span><Play size={16} fill="currentColor" /> Reproducir</span>
                   </button>
@@ -147,14 +182,18 @@ export function PortfolioGallery({ items }: { items: GalleryItem[] }) {
         })}
         {visibleItems.length === 0 && <div className="gallery-empty-filter"><ImageIcon size={28} /><strong>Todavía no hay contenido en esta categoría</strong><p>Vuelve pronto para ver nuevos trabajos.</p></div>}
       </div>
-      {openVideo && openVideoIndex !== null && (
-        <div className="gallery-player-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) setOpenVideoIndex(null); }}>
+      {openEntry && openViewer && (
+        <div className="gallery-player-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) setOpenViewer(null); }}>
           <div className="gallery-player" role="dialog" aria-modal="true" aria-labelledby="gallery-player-title">
-            <header><div><span>Trabajo en vídeo</span><strong>{openVideoIndex + 1} de {videos.length}</strong></div><button type="button" onClick={() => setOpenVideoIndex(null)} aria-label="Cerrar vídeo"><X size={21} /></button></header>
-            <div className="gallery-player-media"><video key={openVideo.media.src} src={openVideo.media.src} poster={openVideo.media.poster} controls autoPlay playsInline preload="metadata" /></div>
+            <header><div><span>Trabajo en {openViewer.kind === "photo" ? "foto" : "vídeo"}</span><strong>{openViewer.index + 1} de {viewerEntries[openViewer.kind].length}</strong></div><button ref={closeButtonRef} type="button" onClick={() => setOpenViewer(null)} aria-label={`Cerrar ${openViewer.kind === "photo" ? "foto" : "vídeo"}`}><X size={21} /></button></header>
+            <div className="gallery-player-media">
+              {openEntry.media.type === "image"
+                ? <Image key={openEntry.media.src} src={openEntry.media.src} alt={openEntry.title} fill sizes="(max-width: 760px) 100vw, 720px" unoptimized priority />
+                : <video key={openEntry.media.src} src={openEntry.media.src} poster={openEntry.media.poster} controls autoPlay playsInline preload="metadata" />}
+            </div>
             <footer>
-              <div><h2 id="gallery-player-title">{openVideo.title}</h2><p>{openVideo.description}</p></div>
-              <nav aria-label="Cambiar vídeo"><button type="button" onClick={() => moveVideo(-1)}><ArrowLeft size={17} /> Anterior</button><button type="button" onClick={() => moveVideo(1)}>Siguiente <ArrowRight size={17} /></button></nav>
+              <div><h2 id="gallery-player-title">{openEntry.title}</h2><p>{openEntry.description}</p></div>
+              <nav aria-label={`Cambiar ${openViewer.kind === "photo" ? "foto" : "vídeo"}`}><button type="button" onClick={() => moveViewer(-1)}><ArrowLeft size={17} /> Anterior</button><button type="button" onClick={() => moveViewer(1)}>Siguiente <ArrowRight size={17} /></button></nav>
             </footer>
           </div>
         </div>
