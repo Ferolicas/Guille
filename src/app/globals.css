@@ -47,7 +47,7 @@ img, video { display: block; max-width: 100%; }
 .hero { position: relative; height: calc(100svh - 76px); min-height: 590px; padding: 66px 0 18px; display: grid; align-items: end; overflow: hidden; background: var(--ink); color: white; }
 .hero-media { position: absolute; inset: 0; }
 .hero-media img { object-fit: cover; object-position: center; }
-.hero-shade { position: absolute; inset: 0; background: rgba(13, 13, 11, 0.1); }
+.hero-shade { position: absolute; inset: 0; background: rgba(13, 13, 11, 0.2); }
 .hero-grid { position: relative; }
 .hero-copy { max-width: 665px; }
 .eyebrow { margin: 0 0 15px; display: flex; align-items: center; gap: 9px; color: var(--orange-dark); font: 750 10px/1.2 var(--font-geist-mono); letter-spacing: 0.12em; text-transform: uppercase; }
