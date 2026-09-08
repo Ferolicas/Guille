@@ -11,6 +11,7 @@ export NVM_DIR="${HOME}/.nvm"
 cd "${APP_DIR}"
 git fetch origin main
 git pull --ff-only origin main
+install -d -m 750 /var/www/guille-data/uploads/leads /var/www/guille-data/uploads/gallery
 pnpm install --frozen-lockfile
 pnpm db:migrate
 pnpm build

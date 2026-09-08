@@ -24,9 +24,10 @@ describe("leadSchema", () => {
     expect(leadSchema.safeParse({ ...validLead, consent: false }).success).toBe(false);
   });
 
-  it("convierte los campos opcionales vacíos en null", () => {
-    const result = leadSchema.parse({ ...validLead, email: "", city: "" });
-    expect(result.email).toBeNull();
-    expect(result.city).toBeNull();
+  it("normaliza el correo y exige correo y población", () => {
+    const result = leadSchema.parse({ ...validLead, email: " ANA@EXAMPLE.COM " });
+    expect(result.email).toBe("ana@example.com");
+    expect(leadSchema.safeParse({ ...validLead, email: "" }).success).toBe(false);
+    expect(leadSchema.safeParse({ ...validLead, city: "" }).success).toBe(false);
   });
 });

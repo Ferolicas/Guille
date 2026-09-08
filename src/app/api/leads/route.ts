@@ -1,9 +1,19 @@
 import { createHash, randomUUID } from "node:crypto";
+import { rm } from "node:fs/promises";
 import { NextResponse, type NextRequest } from "next/server";
-import { Resend } from "resend";
+import { leadFiles, leads } from "@/db/schema";
 import { db } from "@/lib/db";
-import { leads } from "@/db/schema";
+import { sendLeadEmails } from "@/lib/email";
 import { leadSchema } from "@/lib/lead-schema";
+import {
+  compressAndStore,
+  discardParsedUpload,
+  MAX_LEAD_FILES,
+  parseMultipartRequest,
+  storageDirectory,
+  type ParsedMultipart,
+  type StoredUpload,
+} from "@/lib/storage";
 
 export const runtime = "nodejs";
 
@@ -25,15 +35,16 @@ function limitReached(key: string) {
   return false;
 }
 
-function escapeHtml(value: string) {
-  const replacements: Record<string, string> = {
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    "'": "&#39;",
-    '"': "&quot;",
-  };
-  return value.replace(/[&<>'"]/g, (char) => replacements[char] ?? char);
+async function requestContent(request: NextRequest) {
+  const contentType = request.headers.get("content-type") || "";
+  if (contentType.includes("multipart/form-data")) {
+    const parsedUpload = await parseMultipartRequest(request, {
+      maxFiles: MAX_LEAD_FILES,
+      acceptedFields: ["files"],
+    });
+    return { body: parsedUpload.fields as Record<string, unknown>, parsedUpload };
+  }
+  return { body: await request.json() as Record<string, unknown>, parsedUpload: null };
 }
 
 export async function POST(request: NextRequest) {
@@ -43,51 +54,83 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: false, message: "Has enviado varias solicitudes. Espera unos minutos." }, { status: 429 });
   }
 
-  let body: unknown;
+  let parsedUpload: ParsedMultipart | null = null;
+  let leadDirectory: string | null = null;
   try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ ok: false, message: "La solicitud no tiene un formato válido." }, { status: 400 });
-  }
-
-  const parsed = leadSchema.safeParse(body);
-  if (!parsed.success) {
-    return NextResponse.json({ ok: false, message: parsed.error.issues[0]?.message || "Revisa los datos." }, { status: 400 });
-  }
-
-  if (Date.now() - parsed.data.startedAt < 1500) {
-    return NextResponse.json({ ok: false, message: "No pudimos validar el envío. Inténtalo de nuevo." }, { status: 400 });
-  }
-
-  const lead = parsed.data;
-  await db.insert(leads).values({
-    id: randomUUID(),
-    name: lead.name,
-    phone: lead.phone,
-    email: lead.email,
-    city: lead.city,
-    service: lead.service,
-    message: lead.message,
-    consent: lead.consent,
-    source: lead.source,
-    ipHash,
-    userAgent: request.headers.get("user-agent")?.slice(0, 1000) ?? null,
-  });
-
-  const apiKey = process.env.RESEND_API_KEY;
-  const to = process.env.CONTACT_TO_EMAIL;
-  const from = process.env.CONTACT_FROM_EMAIL;
-  if (apiKey && to && from) {
-    const resend = new Resend(apiKey);
-    const { error } = await resend.emails.send({
-      from,
-      to,
-      replyTo: lead.email ?? undefined,
-      subject: `Nueva solicitud: ${lead.service}`,
-      html: `<h2>Nueva solicitud desde guilloguambi.com</h2><p><strong>Nombre:</strong> ${escapeHtml(lead.name)}</p><p><strong>Teléfono:</strong> ${escapeHtml(lead.phone)}</p><p><strong>Email:</strong> ${escapeHtml(lead.email ?? "—")}</p><p><strong>Municipio:</strong> ${escapeHtml(lead.city ?? "—")}</p><p><strong>Servicio:</strong> ${escapeHtml(lead.service)}</p><p><strong>Proyecto:</strong><br>${escapeHtml(lead.message).replace(/\n/g, "<br>")}</p>`,
+    const content = await requestContent(request);
+    parsedUpload = content.parsedUpload;
+    const parsed = leadSchema.safeParse({
+      ...content.body,
+      startedAt: Number(content.body.startedAt),
+      consent: content.body.consent === "true" || content.body.consent === true,
     });
-    if (error) console.error("No se pudo enviar la notificación del lead", error.name);
-  }
+    if (!parsed.success) {
+      return NextResponse.json({ ok: false, message: parsed.error.issues[0]?.message || "Revisa los datos." }, { status: 400 });
+    }
+    if (Date.now() - parsed.data.startedAt < 1500) {
+      return NextResponse.json({ ok: false, message: "No pudimos validar el envío. Inténtalo de nuevo." }, { status: 400 });
+    }
 
-  return NextResponse.json({ ok: true, message: "Solicitud recibida. Te contactaremos lo antes posible." }, { status: 201 });
+    const lead = parsed.data;
+    const leadId = randomUUID();
+    const storedFiles: StoredUpload[] = [];
+    if (parsedUpload?.files.length) {
+      leadDirectory = storageDirectory("leads", leadId);
+      for (const file of parsedUpload.files) {
+        storedFiles.push(await compressAndStore(file, "leads", leadId));
+      }
+    }
+
+    await db.transaction(async (transaction) => {
+      await transaction.insert(leads).values({
+        id: leadId,
+        name: lead.name,
+        phone: lead.phone,
+        email: lead.email,
+        city: lead.city,
+        service: lead.service,
+        message: lead.message,
+        consent: lead.consent,
+        source: lead.source,
+        ipHash,
+        userAgent: request.headers.get("user-agent")?.slice(0, 1000) ?? null,
+      });
+      if (storedFiles.length) {
+        await transaction.insert(leadFiles).values(storedFiles.map((file) => ({
+          id: file.id,
+          leadId,
+          originalName: file.originalName,
+          storageName: file.storageName,
+          mimeType: file.mimeType,
+          kind: file.kind,
+          size: file.size,
+        })));
+      }
+    });
+
+    const mail = await sendLeadEmails({
+      name: lead.name,
+      phone: lead.phone,
+      email: lead.email,
+      city: lead.city,
+      service: lead.service,
+      message: lead.message,
+    }, storedFiles);
+
+    return NextResponse.json({
+      ok: true,
+      message: mail.clientSent
+        ? "Solicitud recibida. Revisa tu correo: te hemos enviado la confirmación."
+        : "Solicitud recibida. Te contactaremos lo antes posible.",
+    }, { status: 201 });
+  } catch (error) {
+    if (leadDirectory) await rm(leadDirectory, { recursive: true, force: true }).catch(() => undefined);
+    console.error("No se pudo procesar la solicitud", error);
+    const message = error instanceof Error && /archivo|vídeo|foto|MB|galería/i.test(error.message)
+      ? error.message
+      : "No pudimos guardar la solicitud. Inténtalo de nuevo o escríbenos por WhatsApp.";
+    return NextResponse.json({ ok: false, message }, { status: 400 });
+  } finally {
+    if (parsedUpload) await discardParsedUpload(parsedUpload).catch(() => undefined);
+  }
 }
