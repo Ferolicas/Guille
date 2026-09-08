@@ -1,6 +1,6 @@
 # Mapa del proyecto — Guillo Guambi
 
-Actualizado: 2026-09-08 · Commit funcional: `4c7a916`
+Actualizado: 2026-09-08 · Commit funcional: `129e748`
 
 ## Identidad y stack
 
@@ -103,6 +103,7 @@ Web comercial mobile first para captar reformas y restauraciones en Barcelona y 
 ## Lecciones y gotchas
 
 - 2026-09-08: en móvil, `.hero` más `.proof-band` suman exactamente `100svh`; cambiar una altura exige captura 390×844.
+- 2026-09-08: los logos del nav y del footer conservan el PNG original; cada enlace actúa como marco con `overflow: hidden` para recortar la línea negra inferior.
 - 2026-09-08: los medios administrables no pueden vivir en `public`, porque un pull o deploy los perdería.
 - 2026-09-08: los vídeos importados usan portada WebP y `preload="none"`; así una galería extensa no descarga decenas de MP4 al abrir la home.
 - 2026-09-08: SMTP2GO responde HTTP 200 incluso si el payload informa fallos; `email.ts` comprueba también `data.failed`.
