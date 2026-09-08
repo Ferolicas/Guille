@@ -1,6 +1,6 @@
 # Mapa del proyecto — Guillo Guambi
 
-Actualizado: 2026-09-08 · Commit funcional: `9ccd182`
+Actualizado: 2026-09-08 · Commit funcional: `796563b`
 
 ## Identidad y stack
 
