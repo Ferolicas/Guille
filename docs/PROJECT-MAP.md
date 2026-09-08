@@ -1,6 +1,6 @@
 # Mapa del proyecto — Guillo Guambi
 
-Actualizado: 2026-09-08 · Commit funcional: `129e748`
+Actualizado: 2026-09-08 · Commit funcional: `9ccd182`
 
 ## Identidad y stack
 
@@ -11,7 +11,7 @@ Web comercial mobile first para captar reformas y restauraciones en Barcelona y 
 | Ruta | Archivo | Qué muestra | Auth | Datos |
 | --- | --- | --- | --- | --- |
 | `/` | `src/app/page.tsx` | Landing, servicios, proceso, galería de trabajos y contacto | No | `gallery_videos`, `gallery_slots` |
-| `/panel` | `src/app/panel/page.tsx` | Login o panel con vídeos importados, seis tarjetas manuales y leads | Cookie firmada | `gallery_videos`, `gallery_slots`, `leads`, `lead_files` |
+| `/panel` | `src/app/panel/page.tsx` | Login o panel con fotos y vídeos importados, seis tarjetas manuales y leads | Cookie firmada | `gallery_photos`, `gallery_videos`, `gallery_slots`, `leads`, `lead_files` |
 | `/panel/restablecer` | `src/app/panel/restablecer/page.tsx` | Formulario de contraseña nueva | Token mágico | `password_reset_tokens` |
 | `/robots.txt`, `/sitemap.xml`, `/manifest.webmanifest` | `src/app/*` | Descubrimiento y metadatos | No | Ninguno |
 
@@ -28,6 +28,7 @@ Web comercial mobile first para captar reformas y restauraciones en Barcelona y 
 | `POST /api/panel/recovery` | `src/app/api/panel/recovery/route.ts` | Crea token y envía enlace mágico | Login | `admin_credentials`, `password_reset_tokens` |
 | `POST /api/panel/reset` | `src/app/api/panel/reset/route.ts` | Consume token, cambia clave y hace login | Restablecer | `admin_credentials`, `password_reset_tokens` |
 | `POST /api/panel/gallery/[slot]` | `src/app/api/panel/gallery/[slot]/route.ts` | Comprime y actualiza uno de seis slots | Panel | `gallery_slots` |
+| `DELETE /api/panel/gallery-photos/[id]` | `src/app/api/panel/gallery-photos/[id]/route.ts` | Retira una foto importada y su archivo persistente | Panel | `gallery_photos` |
 | `DELETE /api/panel/gallery-videos/[id]` | `src/app/api/panel/gallery-videos/[id]/route.ts` | Retira un vídeo importado y sus archivos persistentes | Panel | `gallery_videos` |
 | `GET /api/panel/files/[id]` | `src/app/api/panel/files/[id]/route.ts` | Lee archivo privado del lead con sesión | Panel | `lead_files` |
 
@@ -36,7 +37,8 @@ Web comercial mobile first para captar reformas y restauraciones en Barcelona y 
 - `leads`: contacto, población, servicio, mensaje, consentimiento, origen, hash de IP, agente y fecha.
 - `lead_files`: archivo comprimido ligado a un lead; guarda nombre visible, nombre físico, MIME, tipo y bytes.
 - `gallery_slots`: slots 1–6, título, descripción y hasta dos medios etiquetados como antes/después/único.
-- `gallery_videos`: vídeos importados, portada WebP, copy público, enlace de origen, orden y fecha; el ID externo de TikTok impide duplicados.
+- `gallery_photos`: fotografías importadas, orden, copy y nombre del archivo WebP persistente; el ID externo impide duplicados.
+- `gallery_videos`: vídeos importados, portada WebP, copy público, enlace de origen, orden y fecha; el ID externo de la fuente impide duplicados.
 - `admin_credentials`: singleton `owner`, hash scrypt, email de recuperación y fecha de cambio.
 - `password_reset_tokens`: hash SHA-256 del token de un solo uso, caducidad y consumo.
 - Esquema en `src/db/schema.ts`; migraciones versionadas en `drizzle/` y aplicadas por `deploy.sh`.
@@ -54,11 +56,12 @@ Web comercial mobile first para captar reformas y restauraciones en Barcelona y 
 
 ### Galería
 
-1. `getPublicGalleryItems` presenta primero los vídeos importados, añade los slots manuales con contenido y solo usa seis reservas cuando no existe ningún trabajo.
-2. `PortfolioGallery` muestra dos tarjetas en móvil y carga las portadas sin descargar cada MP4. Al pulsar reproducir abre un visor modal con controles, título y navegación circular Anterior/Siguiente; las piezas dobles conservan la alternancia automática y manual de Antes/Después.
-3. El panel permite reproducir y eliminar individualmente los vídeos importados; la confirmación aclara que la publicación original de TikTok no se altera.
+1. `getPublicGalleryItems` combina fotos importadas, vídeos importados y slots manuales con contenido; solo usa seis reservas cuando no existe ningún trabajo.
+2. `PortfolioGallery` separa el contenido con los botones Fotos/Vídeos y muestra dos tarjetas en móvil. Las imágenes usan carga diferida y cada vídeo carga solo su portada hasta abrir el visor modal con navegación circular Anterior/Siguiente.
+3. El panel permite eliminar individualmente fotos y vídeos importados; para piezas de TikTok aclara que la publicación original no se altera.
 4. Las seis tarjetas manuales siguen admitiendo título, descripción y uno o dos medios. La API comprime el reemplazo, hace upsert y después retira el archivo anterior.
 5. `scripts/import-tiktok-gallery.mjs` valida el manifiesto y los archivos antes de hacer una importación transaccional con deduplicación por ID externo.
+6. `scripts/prepare-local-gallery.mjs` optimiza lotes numerados y `scripts/import-local-gallery.mjs` los registra transaccionalmente sin guardar los medios en Git.
 
 ### Auth y recuperación
 
@@ -73,7 +76,7 @@ Web comercial mobile first para captar reformas y restauraciones en Barcelona y 
 - `src/lib/service-catalog.ts`: copy, imágenes y contexto automático de todas las tarjetas y modales.
 - `src/components/ContactForm.tsx`: modal, formulario en dos pasos y acciones flotantes.
 - `src/lib/storage.ts`: contrato de límites, rutas privadas y compresión usado por leads y galería.
-- `src/lib/gallery.ts`: combina los vídeos importados con los slots manuales y genera las URLs públicas de medios y portadas.
+- `src/lib/gallery.ts`: combina fotos y vídeos importados con los slots manuales y genera las URLs públicas de medios y portadas.
 - `src/lib/panel-auth.ts`: hash, sesión y recuperación usados por todas las APIs privadas.
 - `src/lib/email.ts`: plantillas y transporte SMTP2GO/Resend para leads y recuperación.
 
@@ -106,5 +109,7 @@ Web comercial mobile first para captar reformas y restauraciones en Barcelona y 
 - 2026-09-08: los logos del nav y del footer conservan el PNG original; cada enlace actúa como marco con `overflow: hidden` para recortar la línea negra inferior.
 - 2026-09-08: los medios administrables no pueden vivir en `public`, porque un pull o deploy los perdería.
 - 2026-09-08: los vídeos importados usan portada WebP y `preload="none"`; así una galería extensa no descarga decenas de MP4 al abrir la home.
+- 2026-09-08: las fotos y vídeos reales viven en `/var/www/guille-data/uploads/gallery`; el repositorio solo contiene scripts y metadatos de esquema.
+- 2026-09-08: el hero usa `public/images/hero-guillo.png` sin capa oscura para conservar la imagen entregada tal cual.
 - 2026-09-08: SMTP2GO responde HTTP 200 incluso si el payload informa fallos; `email.ts` comprueba también `data.failed`.
 - 2026-09-08: los documentos privados potencialmente activos se fuerzan a descarga con `nosniff`; solo WebP, MP4 y PDF pueden abrirse inline.
