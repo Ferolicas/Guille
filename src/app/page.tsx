@@ -82,6 +82,7 @@ export default async function HomePage() {
           <picture className="hero-media">
             <Image src="/images/hero-guillo.png" alt="Entrada de una vivienda acabada con la identidad de Guillo Guambi" fill priority sizes="100vw" />
           </picture>
+          <div className="hero-shade" aria-hidden="true" />
           <div className="shell hero-grid">
             <div className="hero-copy">
               <p className="eyebrow light hero-eyebrow"><span /> Reformas y restauración · Barcelona</p>
