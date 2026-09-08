@@ -178,7 +178,8 @@ img, video { display: block; max-width: 100%; }
 .site-footer { padding: 62px 0 90px; background: #10100e; color: white; }
 .footer-grid { display: grid; gap: 34px; }
 .footer-grid > div { display: flex; flex-direction: column; align-items: flex-start; gap: 11px; }
-.site-footer .brand-logo { width: 142px; }
+.site-footer .brand { height: 88px; overflow: hidden; align-items: flex-start; }
+.site-footer .brand-logo { width: auto; height: 92px; }
 .footer-grid > div:first-child p { max-width: 390px; color: rgba(255, 255, 255, 0.48); font-size: 12px; line-height: 1.6; }
 .footer-grid a, .footer-grid > div:last-child p { margin: 0; color: rgba(255, 255, 255, 0.6); font-size: 12px; }
 .footer-label { margin-bottom: 5px; color: #ff9564; font: 700 9px/1 var(--font-geist-mono); letter-spacing: 0.13em; text-transform: uppercase; }
