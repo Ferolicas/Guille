@@ -74,13 +74,13 @@ export function PortfolioGallery({ items }: { items: GalleryItem[] }) {
               <div className="gallery-media">
                 {current?.type === "image" && <Image src={current.src} alt={item.title || `Trabajo ${item.slot}`} fill sizes="(max-width: 640px) 45vw, 28vw" unoptimized />}
                 {current?.type === "video" && <video key={current.src} src={current.src} autoPlay={allowMotion} muted loop playsInline preload="metadata" />}
-                {!current && <div className="gallery-placeholder"><span>{String(item.slot).padStart(2, "0")}</span><ImageIcon size={28} /><strong>Espacio preparado</strong><small>Sube el primer trabajo desde /panel</small></div>}
+                {!current && <div className="gallery-placeholder"><span>{String(item.slot).padStart(2, "0")}</span><ImageIcon size={28} /><strong>Próximamente</strong><small>Nuevos trabajos documentados</small></div>}
                 {current && <span className="gallery-current-label">{current.type === "video" && <Play size={11} fill="currentColor" />} {labelText(current.label)}</span>}
               </div>
               <div className="gallery-card-copy">
                 <span>Trabajo {String(item.slot).padStart(2, "0")}</span>
-                <h3>{item.title || "Título del proyecto"}</h3>
-                <p>{item.description || "La descripción aparecerá aquí cuando completes esta tarjeta en el panel."}</p>
+                <h3>{item.title || "Próximo caso real"}</h3>
+                <p>{item.description || "Aquí podrás ver el punto de partida, el proceso y el resultado de una intervención realizada por Guillo."}</p>
                 {item.media.length > 1 && <div className="gallery-switch" aria-label="Cambiar entre antes y después">{item.media.map((media, index) => <button className={currentIndex === index ? "active" : ""} type="button" key={`${media.src}-${index}`} onClick={() => setActiveMedia((active) => ({ ...active, [item.slot]: index }))}>{labelText(media.label)}</button>)}</div>}
               </div>
             </article>

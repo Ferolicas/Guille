@@ -123,7 +123,7 @@ export default async function HomePage() {
 
         <section className="portfolio-section" id="caso-real">
           <div className="shell">
-            <Reveal><div className="portfolio-heading"><div><p className="eyebrow light"><span /> Ver cómo trabajo</p><h2>Antes, después<br />y todo lo que cambia en medio.</h2></div><p>Esta galería queda preparada para tus trabajos reales. Cuando subas una o dos piezas desde el panel, la tarjeta alternará automáticamente y también permitirá elegir Antes o Después.</p></div></Reveal>
+            <Reveal><div className="portfolio-heading"><div><p className="eyebrow light"><span /> Ver cómo trabajo</p><h2>Antes, después<br />y todo lo que cambia en medio.</h2></div><p>Cada proyecto habla por sus acabados, pero también por lo que no se ve: diagnóstico, preparación y oficio. Aquí podrás comparar el punto de partida con el resultado final de cada intervención.</p></div></Reveal>
             <PortfolioGallery items={gallery} />
           </div>
         </section>
