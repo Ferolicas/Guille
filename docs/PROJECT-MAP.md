@@ -1,6 +1,6 @@
 # Mapa del proyecto — Guillo Guambi
 
-Actualizado: 2026-09-08 · Commit: `ec055f8`
+Actualizado: 2026-09-08 · Commit funcional: `f346214`
 
 ## Identidad y stack
 
@@ -10,8 +10,8 @@ Web comercial mobile first para captar reformas y restauraciones en Barcelona y 
 
 | Ruta | Archivo | Qué muestra | Auth | Datos |
 | --- | --- | --- | --- | --- |
-| `/` | `src/app/page.tsx` | Landing, servicios, proceso, galería y contacto | No | `gallery_slots` |
-| `/panel` | `src/app/panel/page.tsx` | Login o panel con seis tarjetas y leads recientes | Cookie firmada | `gallery_slots`, `leads`, `lead_files` |
+| `/` | `src/app/page.tsx` | Landing, servicios, proceso, galería de trabajos y contacto | No | `gallery_videos`, `gallery_slots` |
+| `/panel` | `src/app/panel/page.tsx` | Login o panel con vídeos importados, seis tarjetas manuales y leads | Cookie firmada | `gallery_videos`, `gallery_slots`, `leads`, `lead_files` |
 | `/panel/restablecer` | `src/app/panel/restablecer/page.tsx` | Formulario de contraseña nueva | Token mágico | `password_reset_tokens` |
 | `/robots.txt`, `/sitemap.xml`, `/manifest.webmanifest` | `src/app/*` | Descubrimiento y metadatos | No | Ninguno |
 
@@ -28,6 +28,7 @@ Web comercial mobile first para captar reformas y restauraciones en Barcelona y 
 | `POST /api/panel/recovery` | `src/app/api/panel/recovery/route.ts` | Crea token y envía enlace mágico | Login | `admin_credentials`, `password_reset_tokens` |
 | `POST /api/panel/reset` | `src/app/api/panel/reset/route.ts` | Consume token, cambia clave y hace login | Restablecer | `admin_credentials`, `password_reset_tokens` |
 | `POST /api/panel/gallery/[slot]` | `src/app/api/panel/gallery/[slot]/route.ts` | Comprime y actualiza uno de seis slots | Panel | `gallery_slots` |
+| `DELETE /api/panel/gallery-videos/[id]` | `src/app/api/panel/gallery-videos/[id]/route.ts` | Retira un vídeo importado y sus archivos persistentes | Panel | `gallery_videos` |
 | `GET /api/panel/files/[id]` | `src/app/api/panel/files/[id]/route.ts` | Lee archivo privado del lead con sesión | Panel | `lead_files` |
 
 ## Modelo de datos
@@ -35,6 +36,7 @@ Web comercial mobile first para captar reformas y restauraciones en Barcelona y 
 - `leads`: contacto, población, servicio, mensaje, consentimiento, origen, hash de IP, agente y fecha.
 - `lead_files`: archivo comprimido ligado a un lead; guarda nombre visible, nombre físico, MIME, tipo y bytes.
 - `gallery_slots`: slots 1–6, título, descripción y hasta dos medios etiquetados como antes/después/único.
+- `gallery_videos`: vídeos importados, portada WebP, copy público, enlace de origen, orden y fecha; el ID externo de TikTok impide duplicados.
 - `admin_credentials`: singleton `owner`, hash scrypt, email de recuperación y fecha de cambio.
 - `password_reset_tokens`: hash SHA-256 del token de un solo uso, caducidad y consumo.
 - Esquema en `src/db/schema.ts`; migraciones versionadas en `drizzle/` y aplicadas por `deploy.sh`.
@@ -52,10 +54,11 @@ Web comercial mobile first para captar reformas y restauraciones en Barcelona y 
 
 ### Galería
 
-1. `getGalleryItems` siempre devuelve seis tarjetas, vacías si no hay contenido.
-2. El panel permite título, descripción y uno o dos medios por slot.
-3. La API comprime el reemplazo, hace upsert y solo después retira el archivo anterior.
-4. `PortfolioGallery` presenta dos tarjetas en móvil, carrusel horizontal y alternancia automática cuando existen dos medios; los botones Antes/Después permiten control manual.
+1. `getPublicGalleryItems` presenta primero los vídeos importados, añade los slots manuales con contenido y solo usa seis reservas cuando no existe ningún trabajo.
+2. `PortfolioGallery` muestra dos tarjetas en móvil, carga las portadas sin descargar cada vídeo y mantiene la alternancia automática y manual de Antes/Después en piezas dobles.
+3. El panel permite reproducir y eliminar individualmente los vídeos importados; la confirmación aclara que la publicación original de TikTok no se altera.
+4. Las seis tarjetas manuales siguen admitiendo título, descripción y uno o dos medios. La API comprime el reemplazo, hace upsert y después retira el archivo anterior.
+5. `scripts/import-tiktok-gallery.mjs` valida el manifiesto y los archivos antes de hacer una importación transaccional con deduplicación por ID externo.
 
 ### Auth y recuperación
 
@@ -70,6 +73,7 @@ Web comercial mobile first para captar reformas y restauraciones en Barcelona y 
 - `src/lib/service-catalog.ts`: copy, imágenes y contexto automático de todas las tarjetas y modales.
 - `src/components/ContactForm.tsx`: modal, formulario en dos pasos y acciones flotantes.
 - `src/lib/storage.ts`: contrato de límites, rutas privadas y compresión usado por leads y galería.
+- `src/lib/gallery.ts`: combina los vídeos importados con los slots manuales y genera las URLs públicas de medios y portadas.
 - `src/lib/panel-auth.ts`: hash, sesión y recuperación usados por todas las APIs privadas.
 - `src/lib/email.ts`: plantillas y transporte SMTP2GO/Resend para leads y recuperación.
 
@@ -100,5 +104,6 @@ Web comercial mobile first para captar reformas y restauraciones en Barcelona y 
 
 - 2026-09-08: en móvil, `.hero` más `.proof-band` suman exactamente `100svh`; cambiar una altura exige captura 390×844.
 - 2026-09-08: los medios administrables no pueden vivir en `public`, porque un pull o deploy los perdería.
+- 2026-09-08: los vídeos importados usan portada WebP y `preload="none"`; así una galería extensa no descarga decenas de MP4 al abrir la home.
 - 2026-09-08: SMTP2GO responde HTTP 200 incluso si el payload informa fallos; `email.ts` comprueba también `data.failed`.
 - 2026-09-08: los documentos privados potencialmente activos se fuerzan a descarga con `nosniff`; solo WebP, MP4 y PDF pueden abrirse inline.

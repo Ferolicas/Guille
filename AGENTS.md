@@ -30,7 +30,7 @@ Web comercial de captación para reformas y restauración en Barcelona y su áre
 - No romper `GET /api/health` ni el guardado de `/api/leads`.
 - La interfaz se diseña mobile first para 390×844; escritorio es una adaptación y no puede degradar el flujo móvil.
 - Los archivos de leads nunca se sirven públicamente; solo `/api/panel/files/[id]` con sesión válida puede leerlos.
-- La galería pública siempre contiene seis slots y los medios subidos viven fuera del repositorio.
+- La galería pública prioriza los vídeos importados y añade los slots manuales que tengan contenido; si está vacía, conserva seis tarjetas de reserva. Todos los medios viven fuera del repositorio.
 
 <!-- BEGIN:nextjs-agent-rules -->
 
