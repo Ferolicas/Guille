@@ -1,6 +1,6 @@
 # Mapa del proyecto — Guillo Guambi
 
-Actualizado: 2026-09-08 · Commit funcional: `796563b`
+Actualizado: 2026-09-08 · Commit funcional: `6b4ef2f`
 
 ## Identidad y stack
 
@@ -110,6 +110,6 @@ Web comercial mobile first para captar reformas y restauraciones en Barcelona y 
 - 2026-09-08: los medios administrables no pueden vivir en `public`, porque un pull o deploy los perdería.
 - 2026-09-08: los vídeos importados usan portada WebP y `preload="none"`; así una galería extensa no descarga decenas de MP4 al abrir la home.
 - 2026-09-08: las fotos y vídeos reales viven en `/var/www/guille-data/uploads/gallery`; el repositorio solo contiene scripts y metadatos de esquema.
-- 2026-09-08: el hero usa `public/images/hero-guillo.png` sin capa oscura para conservar la imagen entregada tal cual.
+- 2026-09-08: el hero usa `public/images/hero-guillo.png` con una capa negra uniforme al 10% para mejorar la lectura sin ocultar la imagen.
 - 2026-09-08: SMTP2GO responde HTTP 200 incluso si el payload informa fallos; `email.ts` comprueba también `data.failed`.
 - 2026-09-08: los documentos privados potencialmente activos se fuerzan a descarga con `nosniff`; solo WebP, MP4 y PDF pueden abrirse inline.

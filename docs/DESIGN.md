@@ -19,7 +19,7 @@ Geist para lectura y titulares; Geist Mono para rótulos técnicos, índices y e
 
 ## Componentes
 
-- Hero: `hero-guillo.png` visible sin degradado ni capa oscura; la primera pantalla queda cerrada por la franja de tres especialidades.
+- Hero: `hero-guillo.png` sin degradado y con una capa negra uniforme al 10% para legibilidad; la primera pantalla queda cerrada por la franja de tres especialidades.
 - Tarjetas de diagnóstico y servicio: imagen 4:2.45, índice técnico, copy breve y CTA contextual.
 - Marca: el logo conserva su PNG original. En el nav crece un 10% anclado arriba para extenderse solo hacia abajo; tanto allí como en el footer, su contenedor recorta la línea negra inferior con `overflow: hidden`.
 - Galería: botones Fotos/Vídeos, dos tarjetas visibles en móvil, medios reales importados y slots manuales, snap horizontal, visor modal de vídeo y selector Antes/Después cuando corresponda.
