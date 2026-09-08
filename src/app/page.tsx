@@ -80,10 +80,8 @@ export default async function HomePage() {
       <main>
         <section className="hero" id="inicio">
           <picture className="hero-media">
-            <source srcSet="/images/hero-restauracion.avif" type="image/avif" />
-            <Image src="/images/hero-restauracion.webp" alt="Profesional restaurando una pared interior" fill priority sizes="100vw" />
+            <Image src="/images/hero-guillo.png" alt="Entrada de una vivienda acabada con la identidad de Guillo Guambi" fill priority sizes="100vw" />
           </picture>
-          <div className="hero-shade" aria-hidden="true" />
           <div className="shell hero-grid">
             <div className="hero-copy">
               <p className="eyebrow light hero-eyebrow"><span /> Reformas y restauración · Barcelona</p>

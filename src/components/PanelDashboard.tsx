@@ -20,7 +20,7 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { Brand } from "@/components/Brand";
 import type { GalleryItem, GalleryMedia } from "@/components/PortfolioGallery";
-import type { GalleryVideoItem } from "@/lib/gallery";
+import type { GalleryPhotoItem, GalleryVideoItem } from "@/lib/gallery";
 
 export type PanelLead = {
   id: string;
@@ -49,13 +49,17 @@ function MediaPreview({ media, index }: { media: GalleryMedia; index: number }) 
   );
 }
 
-export function PanelDashboard({ initialGallery, initialVideos, leads }: { initialGallery: GalleryItem[]; initialVideos: GalleryVideoItem[]; leads: PanelLead[] }) {
+export function PanelDashboard({ initialGallery, initialPhotos, initialVideos, leads }: { initialGallery: GalleryItem[]; initialPhotos: GalleryPhotoItem[]; initialVideos: GalleryVideoItem[]; leads: PanelLead[] }) {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("gallery");
   const [gallery, setGallery] = useState(initialGallery);
+  const [photos, setPhotos] = useState(initialPhotos);
   const [videos, setVideos] = useState(initialVideos);
+  const [photoToDelete, setPhotoToDelete] = useState<GalleryPhotoItem | null>(null);
   const [videoToDelete, setVideoToDelete] = useState<GalleryVideoItem | null>(null);
+  const [deletingPhoto, setDeletingPhoto] = useState(false);
   const [deletingVideo, setDeletingVideo] = useState(false);
+  const [photoMessage, setPhotoMessage] = useState<{ type: "error" | "success"; text: string } | null>(null);
   const [videoMessage, setVideoMessage] = useState<{ type: "error" | "success"; text: string } | null>(null);
   const [savingSlot, setSavingSlot] = useState<number | null>(null);
   const [slotMessages, setSlotMessages] = useState<Record<number, { type: "error" | "success"; text: string }>>({});
@@ -141,6 +145,24 @@ export function PanelDashboard({ initialGallery, initialVideos, leads }: { initi
     }
   }
 
+  async function deleteImportedPhoto() {
+    if (!photoToDelete || deletingPhoto) return;
+    setDeletingPhoto(true);
+    setPhotoMessage(null);
+    try {
+      const response = await fetch(`/api/panel/gallery-photos/${photoToDelete.id}`, { method: "DELETE" });
+      const result = await response.json() as { ok?: boolean; message?: string };
+      if (!response.ok || !result.ok) throw new Error(result.message || "No se pudo eliminar la foto.");
+      setPhotos((current) => current.filter((photo) => photo.id !== photoToDelete.id));
+      setPhotoMessage({ type: "success", text: result.message || "Foto eliminada de la galería." });
+      setPhotoToDelete(null);
+    } catch (error) {
+      setPhotoMessage({ type: "error", text: error instanceof Error ? error.message : "No se pudo eliminar la foto." });
+    } finally {
+      setDeletingPhoto(false);
+    }
+  }
+
   return (
     <main className="panel-page">
       <header className="panel-header">
@@ -152,7 +174,7 @@ export function PanelDashboard({ initialGallery, initialVideos, leads }: { initi
         <aside className="panel-sidebar">
           <div><p>Panel privado</p><strong>Contenido y solicitudes</strong></div>
           <nav aria-label="Secciones del panel">
-            <button className={tab === "gallery" ? "active" : ""} type="button" onClick={() => setTab("gallery")}><LayoutGrid size={18} /> Galería <span>{videos.length + 6}</span></button>
+            <button className={tab === "gallery" ? "active" : ""} type="button" onClick={() => setTab("gallery")}><LayoutGrid size={18} /> Galería <span>{photos.length + videos.length + 6}</span></button>
             <button className={tab === "leads" ? "active" : ""} type="button" onClick={() => setTab("leads")}><Mail size={18} /> Solicitudes <span>{leads.length}</span></button>
             <button className={tab === "security" ? "active" : ""} type="button" onClick={() => setTab("security")}><KeyRound size={18} /> Seguridad</button>
           </nav>
@@ -162,8 +184,21 @@ export function PanelDashboard({ initialGallery, initialVideos, leads }: { initi
         <div className="panel-main">
           {tab === "gallery" && (
             <section>
-              <div className="panel-title"><div><p>Galería pública</p><h1>Trabajos publicados</h1></div><p>Los vídeos importados de TikTok aparecen primero. Puedes retirar cualquiera desde aquí; las seis tarjetas editables siguen disponibles para tus próximos antes y después.</p></div>
-              <div className="panel-imported-heading"><div><span>Vídeos de TikTok</span><strong>{videos.length} publicados</strong></div><p>Eliminar un vídeo lo retira de la web y del almacenamiento. La publicación original de TikTok no se modifica.</p></div>
+              <div className="panel-title"><div><p>Galería pública</p><h1>Trabajos publicados</h1></div><p>Gestiona por separado las fotos y los vídeos que aparecen en la web. Las seis tarjetas editables siguen disponibles para tus próximos antes y después.</p></div>
+              <div className="panel-imported-heading"><div><span>Fotos de trabajos</span><strong>{photos.length} publicadas</strong></div><p>Las fotos mantienen el orden indicado al importarlas. Puedes retirar individualmente cualquier imagen que no quieras mostrar.</p></div>
+              {photoMessage && <p className={`panel-message panel-video-message ${photoMessage.type}`} role="status">{photoMessage.text}</p>}
+              {photos.length > 0 ? (
+                <div className="panel-photo-grid">
+                  {photos.map((photo, index) => (
+                    <article className="panel-photo-card" key={photo.id}>
+                      <div className="panel-photo-media"><Image src={photo.src} alt={photo.title} fill sizes="(max-width: 640px) 45vw, 22vw" unoptimized /><span>{String(index + 1).padStart(2, "0")}</span></div>
+                      <div className="panel-photo-copy"><h2>{photo.title}</h2><p>{photo.description}</p></div>
+                      <div className="panel-photo-actions"><button type="button" onClick={() => setPhotoToDelete(photo)}><Trash2 size={15} /> Eliminar</button></div>
+                    </article>
+                  ))}
+                </div>
+              ) : <div className="panel-empty-state panel-empty-videos"><ImageIcon size={28} /><h2>No hay fotos importadas</h2><p>Las tarjetas manuales permanecen disponibles debajo.</p></div>}
+              <div className="panel-imported-heading"><div><span>Vídeos de trabajos</span><strong>{videos.length} publicados</strong></div><p>El nuevo vídeo aparece primero y después se mantienen los vídeos importados de TikTok. Puedes retirar cualquiera desde aquí.</p></div>
               {videoMessage && <p className={`panel-message panel-video-message ${videoMessage.type}`} role="status">{videoMessage.text}</p>}
               {videos.length > 0 ? (
                 <div className="panel-video-grid">
@@ -233,13 +268,25 @@ export function PanelDashboard({ initialGallery, initialVideos, leads }: { initi
         </div>
       </div>
 
+      {photoToDelete && (
+        <div className="panel-confirm-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget && !deletingPhoto) setPhotoToDelete(null); }}>
+          <div className="panel-confirm" role="alertdialog" aria-modal="true" aria-labelledby="delete-photo-title" aria-describedby="delete-photo-description">
+            <span><Trash2 size={22} /></span>
+            <p>Eliminar de la galería</p>
+            <h2 id="delete-photo-title">¿Retirar esta foto?</h2>
+            <p id="delete-photo-description">“{photoToDelete.title}” dejará de aparecer en la pestaña Fotos y su archivo se eliminará del almacenamiento.</p>
+            <div><button type="button" onClick={() => setPhotoToDelete(null)} disabled={deletingPhoto}>Cancelar</button><button className="danger" type="button" onClick={deleteImportedPhoto} disabled={deletingPhoto}>{deletingPhoto ? <><LoaderCircle className="spinner" size={16} /> Eliminando…</> : <><Trash2 size={16} /> Sí, eliminar</>}</button></div>
+          </div>
+        </div>
+      )}
+
       {videoToDelete && (
         <div className="panel-confirm-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget && !deletingVideo) setVideoToDelete(null); }}>
           <div className="panel-confirm" role="alertdialog" aria-modal="true" aria-labelledby="delete-video-title" aria-describedby="delete-video-description">
             <span><Trash2 size={22} /></span>
             <p>Eliminar de la galería</p>
             <h2 id="delete-video-title">¿Retirar este vídeo?</h2>
-            <p id="delete-video-description">“{videoToDelete.title}” dejará de aparecer en la web. La publicación original seguirá intacta en TikTok.</p>
+            <p id="delete-video-description">“{videoToDelete.title}” dejará de aparecer en la web y su archivo se eliminará del almacenamiento.{videoToDelete.sourceUrl ? " La publicación original seguirá intacta en TikTok." : ""}</p>
             <div><button type="button" onClick={() => setVideoToDelete(null)} disabled={deletingVideo}>Cancelar</button><button className="danger" type="button" onClick={deleteImportedVideo} disabled={deletingVideo}>{deletingVideo ? <><LoaderCircle className="spinner" size={16} /> Eliminando…</> : <><Trash2 size={16} /> Sí, eliminar</>}</button></div>
           </div>
         </div>

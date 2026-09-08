@@ -39,6 +39,16 @@ export const gallerySlots = pgTable("gallery_slots", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+export const galleryPhotos = pgTable("gallery_photos", {
+  id: varchar("id", { length: 36 }).primaryKey(),
+  title: varchar("title", { length: 120 }).notNull(),
+  description: text("description").notNull().default(""),
+  storageName: varchar("storage_name", { length: 255 }).notNull().unique(),
+  sourceExternalId: varchar("source_external_id", { length: 100 }).notNull().unique(),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 export const galleryVideos = pgTable("gallery_videos", {
   id: varchar("id", { length: 36 }).primaryKey(),
   title: varchar("title", { length: 120 }).notNull(),

@@ -1,5 +1,5 @@
 import { asc } from "drizzle-orm";
-import { gallerySlots, galleryVideos } from "@/db/schema";
+import { galleryPhotos, gallerySlots, galleryVideos } from "@/db/schema";
 import { db } from "@/lib/db";
 import type { GalleryItem, GalleryMedia } from "@/components/PortfolioGallery";
 
@@ -45,6 +45,29 @@ export type GalleryVideoItem = {
   sourceUrl: string;
 };
 
+export type GalleryPhotoItem = {
+  id: string;
+  title: string;
+  description: string;
+  src: string;
+};
+
+export async function getGalleryPhotos(): Promise<GalleryPhotoItem[]> {
+  try {
+    if (process.env.SKIP_DB === "true") return [];
+    const rows = await db.select().from(galleryPhotos).orderBy(asc(galleryPhotos.sortOrder), asc(galleryPhotos.createdAt));
+    return rows.map((row) => ({
+      id: row.id,
+      title: row.title,
+      description: row.description,
+      src: `/api/gallery-media/${encodeURIComponent(row.storageName)}`,
+    }));
+  } catch (error) {
+    console.error("No se pudieron cargar las fotos importadas", error);
+    return [];
+  }
+}
+
 export async function getGalleryVideos(): Promise<GalleryVideoItem[]> {
   try {
     if (process.env.SKIP_DB === "true") return [];
@@ -64,11 +87,18 @@ export async function getGalleryVideos(): Promise<GalleryVideoItem[]> {
 }
 
 export async function getPublicGalleryItems(): Promise<GalleryItem[]> {
-  const [manualItems, videos] = await Promise.all([getGalleryItems(), getGalleryVideos()]);
+  const [manualItems, photos, videos] = await Promise.all([getGalleryItems(), getGalleryPhotos(), getGalleryVideos()]);
   const publicItems: GalleryItem[] = [
+    ...photos.map((photo, index) => ({
+      id: photo.id,
+      slot: index + 1,
+      title: photo.title,
+      description: photo.description,
+      media: [{ src: photo.src, type: "image" as const, label: "single" as const }],
+    })),
     ...videos.map((video, index) => ({
       id: video.id,
-      slot: index + 1,
+      slot: photos.length + index + 1,
       title: video.title,
       description: video.description,
       sourceUrl: video.sourceUrl,
@@ -77,7 +107,7 @@ export async function getPublicGalleryItems(): Promise<GalleryItem[]> {
     ...manualItems.filter((item) => item.media.length > 0).map((item, index) => ({
       ...item,
       id: `manual-${item.slot}`,
-      slot: videos.length + index + 1,
+      slot: photos.length + videos.length + index + 1,
     })),
   ];
   return publicItems.length > 0 ? publicItems : manualItems;

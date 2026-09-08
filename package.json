@@ -13,7 +13,9 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
-    "gallery:import": "node scripts/import-tiktok-gallery.mjs"
+    "gallery:import": "node scripts/import-tiktok-gallery.mjs",
+    "gallery:prepare": "node scripts/prepare-local-gallery.mjs",
+    "gallery:import-local": "node scripts/import-local-gallery.mjs"
   },
   "dependencies": {
     "busboy": "^1.6.0",

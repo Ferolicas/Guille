@@ -5,7 +5,7 @@ import { PanelDashboard, type PanelLead } from "@/components/PanelDashboard";
 import { PanelLogin } from "@/components/PanelLogin";
 import { leadFiles, leads } from "@/db/schema";
 import { db } from "@/lib/db";
-import { getGalleryItems, getGalleryVideos } from "@/lib/gallery";
+import { getGalleryItems, getGalleryPhotos, getGalleryVideos } from "@/lib/gallery";
 import { PANEL_COOKIE, validPanelSession } from "@/lib/panel-auth";
 
 export const dynamic = "force-dynamic";
@@ -40,6 +40,6 @@ async function recentLeads(): Promise<PanelLead[]> {
 export default async function PanelPage() {
   const cookieStore = await cookies();
   if (!validPanelSession(cookieStore.get(PANEL_COOKIE)?.value)) return <PanelLogin />;
-  const [gallery, videos, leadRows] = await Promise.all([getGalleryItems(), getGalleryVideos(), recentLeads()]);
-  return <PanelDashboard initialGallery={gallery} initialVideos={videos} leads={leadRows} />;
+  const [gallery, photos, videos, leadRows] = await Promise.all([getGalleryItems(), getGalleryPhotos(), getGalleryVideos(), recentLeads()]);
+  return <PanelDashboard initialGallery={gallery} initialPhotos={photos} initialVideos={videos} leads={leadRows} />;
 }

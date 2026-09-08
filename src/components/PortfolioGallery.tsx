@@ -38,17 +38,21 @@ function motionPreference() {
 
 export function PortfolioGallery({ items }: { items: GalleryItem[] }) {
   const railRef = useRef<HTMLDivElement>(null);
+  const [activeKind, setActiveKind] = useState<"photo" | "video">("photo");
   const [activeMedia, setActiveMedia] = useState<Record<string, number>>({});
   const [openVideoIndex, setOpenVideoIndex] = useState<number | null>(null);
   const allowMotion = useSyncExternalStore(subscribeToMotionPreference, motionPreference, () => false);
-  const videos = useMemo(() => items.flatMap((item) => item.media
+  const photoItems = useMemo(() => items.filter((item) => !item.media.some((media) => media.type === "video")), [items]);
+  const videoItems = useMemo(() => items.filter((item) => item.media.some((media) => media.type === "video")), [items]);
+  const visibleItems = activeKind === "photo" ? photoItems : videoItems;
+  const videos = useMemo(() => videoItems.flatMap((item) => item.media
     .filter((media) => media.type === "video")
     .map((media) => ({
       key: `${item.id || item.slot}-${media.src}`,
       title: item.title || `Trabajo ${item.slot}`,
       description: item.description,
       media,
-    }))), [items]);
+    }))), [videoItems]);
   const openVideo = openVideoIndex === null ? null : videos[openVideoIndex];
 
   useEffect(() => {
@@ -85,6 +89,12 @@ export function PortfolioGallery({ items }: { items: GalleryItem[] }) {
     rail.scrollBy({ left: direction * rail.clientWidth * 0.84, behavior: "smooth" });
   }
 
+  function selectKind(kind: "photo" | "video") {
+    setActiveKind(kind);
+    setOpenVideoIndex(null);
+    window.requestAnimationFrame(() => railRef.current?.scrollTo({ left: 0, behavior: "smooth" }));
+  }
+
   function showVideo(src: string) {
     const index = videos.findIndex((video) => video.media.src === src);
     if (index >= 0) setOpenVideoIndex(index);
@@ -96,15 +106,19 @@ export function PortfolioGallery({ items }: { items: GalleryItem[] }) {
 
   return (
     <div className="gallery-wrap">
+      <div className="gallery-tabs" role="tablist" aria-label="Filtrar trabajos por formato">
+        <button className={activeKind === "photo" ? "active" : ""} type="button" role="tab" aria-selected={activeKind === "photo"} onClick={() => selectKind("photo")}><ImageIcon size={16} /> Fotos <span>{photoItems.length}</span></button>
+        <button className={activeKind === "video" ? "active" : ""} type="button" role="tab" aria-selected={activeKind === "video"} onClick={() => selectKind("video")}><Play size={15} fill="currentColor" /> Vídeos <span>{videoItems.length}</span></button>
+      </div>
       <div className="gallery-controls">
-        <p>Desliza para ver {items.length === 1 ? "el trabajo" : `los ${items.length} trabajos`}</p>
+        <p>Desliza para ver {visibleItems.length === 1 ? (activeKind === "photo" ? "la foto" : "el vídeo") : `las ${visibleItems.length} ${activeKind === "photo" ? "fotos" : "piezas en vídeo"}`}</p>
         <div>
-          <button type="button" onClick={() => move(-1)} aria-label="Ver trabajos anteriores"><ArrowLeft size={18} /></button>
-          <button type="button" onClick={() => move(1)} aria-label="Ver trabajos siguientes"><ArrowRight size={18} /></button>
+          <button type="button" onClick={() => move(-1)} aria-label={`Ver ${activeKind === "photo" ? "fotos" : "vídeos"} anteriores`}><ArrowLeft size={18} /></button>
+          <button type="button" onClick={() => move(1)} aria-label={`Ver ${activeKind === "photo" ? "fotos" : "vídeos"} siguientes`}><ArrowRight size={18} /></button>
         </div>
       </div>
-      <div className="gallery-rail" ref={railRef}>
-        {items.map((item) => {
+      <div className="gallery-rail" ref={railRef} role="tabpanel">
+        {visibleItems.map((item, visibleIndex) => {
           const itemKey = item.id || String(item.slot);
           const currentIndex = Math.min(activeMedia[itemKey] ?? 0, Math.max(item.media.length - 1, 0));
           const current = item.media[currentIndex];
@@ -118,11 +132,11 @@ export function PortfolioGallery({ items }: { items: GalleryItem[] }) {
                     <span><Play size={16} fill="currentColor" /> Reproducir</span>
                   </button>
                 )}
-                {!current && <div className="gallery-placeholder"><span>{String(item.slot).padStart(2, "0")}</span><ImageIcon size={28} /><strong>Próximamente</strong><small>Nuevos trabajos documentados</small></div>}
+                {!current && <div className="gallery-placeholder"><span>{String(visibleIndex + 1).padStart(2, "0")}</span><ImageIcon size={28} /><strong>Próximamente</strong><small>Nuevos trabajos documentados</small></div>}
                 {current && <span className="gallery-current-label">{current.type === "video" && <Play size={11} fill="currentColor" />} {labelText(current)}</span>}
               </div>
               <div className="gallery-card-copy">
-                <span>Trabajo {String(item.slot).padStart(2, "0")}</span>
+                <span>Trabajo {String(visibleIndex + 1).padStart(2, "0")}</span>
                 <h3>{item.title || "Próximo caso real"}</h3>
                 <p>{item.description || "Aquí podrás ver el punto de partida, el proceso y el resultado de una intervención realizada por Guillo."}</p>
                 {item.media.length > 1 && <div className="gallery-switch" aria-label="Cambiar entre antes y después">{item.media.map((media, index) => <button className={currentIndex === index ? "active" : ""} type="button" key={`${media.src}-${index}`} onClick={() => setActiveMedia((active) => ({ ...active, [itemKey]: index }))}>{labelText(media)}</button>)}</div>}
@@ -131,6 +145,7 @@ export function PortfolioGallery({ items }: { items: GalleryItem[] }) {
             </article>
           );
         })}
+        {visibleItems.length === 0 && <div className="gallery-empty-filter"><ImageIcon size={28} /><strong>Todavía no hay contenido en esta categoría</strong><p>Vuelve pronto para ver nuevos trabajos.</p></div>}
       </div>
       {openVideo && openVideoIndex !== null && (
         <div className="gallery-player-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) setOpenVideoIndex(null); }}>
