@@ -32,7 +32,8 @@ img, video { display: block; max-width: 100%; }
 .header-inner { height: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .brand { display: inline-flex; align-items: center; min-width: max-content; }
 .brand-logo { width: 94px; height: auto; filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.24)); }
-.site-header .brand-logo { width: auto; height: 64px; }
+.site-header .brand { height: 100%; overflow: hidden; align-items: flex-start; }
+.site-header .brand-logo { width: auto; height: 70.4px; }
 .brand-inverse { color: white; }
 .desktop-nav { display: none; }
 .button { min-height: 46px; border: 0; border-radius: 2px; padding: 0 17px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; font-weight: 750; cursor: pointer; transition: transform 0.2s, background 0.2s, color 0.2s, border-color 0.2s, opacity 0.2s; }
@@ -386,7 +387,7 @@ img, video { display: block; max-width: 100%; }
   .shell { width: min(100% - 40px, 1180px); }
   .site-header { height: 76px; }
   .brand-logo { width: 112px; }
-  .site-header .brand-logo { width: auto; height: 74px; }
+  .site-header .brand-logo { width: auto; height: 81.4px; }
   .button { min-height: 50px; padding-inline: 22px; font-size: 14px; }
   .button-small { min-height: 41px; padding-inline: 17px; font-size: 12px; }
   .button-small svg { display: block; }
