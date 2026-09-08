@@ -1,6 +1,6 @@
 # Mapa del proyecto — Guillo Guambi
 
-Actualizado: 2026-09-08 · Commit funcional: `f346214`
+Actualizado: 2026-09-08 · Commit funcional: `1ece806`
 
 ## Identidad y stack
 
@@ -55,7 +55,7 @@ Web comercial mobile first para captar reformas y restauraciones en Barcelona y 
 ### Galería
 
 1. `getPublicGalleryItems` presenta primero los vídeos importados, añade los slots manuales con contenido y solo usa seis reservas cuando no existe ningún trabajo.
-2. `PortfolioGallery` muestra dos tarjetas en móvil, carga las portadas sin descargar cada vídeo y mantiene la alternancia automática y manual de Antes/Después en piezas dobles.
+2. `PortfolioGallery` muestra dos tarjetas en móvil y carga las portadas sin descargar cada MP4. Al pulsar reproducir abre un visor modal con controles, título y navegación circular Anterior/Siguiente; las piezas dobles conservan la alternancia automática y manual de Antes/Después.
 3. El panel permite reproducir y eliminar individualmente los vídeos importados; la confirmación aclara que la publicación original de TikTok no se altera.
 4. Las seis tarjetas manuales siguen admitiendo título, descripción y uno o dos medios. La API comprime el reemplazo, hace upsert y después retira el archivo anterior.
 5. `scripts/import-tiktok-gallery.mjs` valida el manifiesto y los archivos antes de hacer una importación transaccional con deduplicación por ID externo.
