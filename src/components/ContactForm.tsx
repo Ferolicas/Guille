@@ -237,6 +237,7 @@ export function QuoteDialog() {
 
 export function FloatingActions() {
   const [showValuation, setShowValuation] = useState(false);
+  const [compactSocial, setCompactSocial] = useState(false);
 
   useEffect(() => {
     let frame = 0;
@@ -245,6 +246,7 @@ export function FloatingActions() {
       frame = window.requestAnimationFrame(() => {
         const marker = document.getElementById("diagnostico");
         setShowValuation(Boolean(marker && window.scrollY >= marker.offsetTop - 72));
+        setCompactSocial(window.scrollY > 18);
       });
     }
     updateVisibility();
@@ -259,7 +261,7 @@ export function FloatingActions() {
 
   return (
     <>
-      <div className="social-float" aria-label="Contacto y redes sociales">
+      <div className={`social-float ${compactSocial ? "social-float-condensed" : ""}`} aria-label="Contacto y redes sociales">
         <a href="https://wa.me/34662569563?text=Hola%2C%20quiero%20mas%20informacion" target="_blank" rel="noreferrer" aria-label="Escribir por WhatsApp"><WhatsAppIcon size={21} aria-hidden="true" /></a>
         <a href="https://www.tiktok.com/@guilloguambi" target="_blank" rel="noreferrer" aria-label="Ver TikTok de Guillo Guambi"><Music2 size={20} /></a>
         <a className="maps-action" href="https://www.google.com/maps/dir/?api=1&destination=Carrer%20de%20Navata%2C%20Badalona&travelmode=driving" target="_blank" rel="noreferrer" aria-label="Cómo llegar a Carrer de Navata en Badalona"><Image src="/images/brand/google-maps.png" width={256} height={256} alt="Google Maps" /><span><strong>Carrer de Navata</strong><small>Badalona · Cómo llegar</small></span></a>
