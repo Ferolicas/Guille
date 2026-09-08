@@ -61,7 +61,7 @@ export function PanelLogin() {
         <Brand />
         {mode === "login" ? (
           <>
-            <div className="panel-auth-heading"><span><KeyRound size={18} /></span><p>Acceso privado</p><h1>Panel de trabajos</h1><small>Gestiona los vídeos y las tarjetas de la galería, y revisa las solicitudes recibidas.</small></div>
+            <div className="panel-auth-heading"><span><KeyRound size={18} /></span><p>Acceso privado</p><h1>Panel de trabajos</h1><small>Gestiona las fotos, los vídeos y las tarjetas de la galería, y revisa las solicitudes recibidas.</small></div>
             <form onSubmit={submitLogin}>
               <label className="field"><span>Contraseña</span><div className="password-input"><input autoFocus name="password" type={showPassword ? "text" : "password"} autoComplete="current-password" required /><button type="button" onClick={() => setShowPassword((visible) => !visible)} aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}>{showPassword ? <EyeOff size={18} /> : <Eye size={18} />}</button></div></label>
               {message && <p className={`panel-message ${message.type}`} role="alert">{message.text}</p>}
