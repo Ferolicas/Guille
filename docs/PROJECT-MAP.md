@@ -1,6 +1,6 @@
 # Mapa del proyecto — Guillo Guambi
 
-Actualizado: 2026-09-08 · Commit funcional: `7c4a70a`
+Actualizado: 2026-09-08 · Commit funcional: `19dcef2`
 
 ## Identidad y stack
 
@@ -57,7 +57,7 @@ Web comercial mobile first para captar reformas y restauraciones en Barcelona y 
 ### Galería
 
 1. `getPublicGalleryItems` combina fotos importadas, vídeos importados y slots manuales con contenido; solo usa seis reservas cuando no existe ningún trabajo.
-2. `PortfolioGallery` separa el contenido con los botones Fotos/Vídeos y muestra dos tarjetas en móvil. Las imágenes usan carga diferida y cada vídeo carga solo su portada hasta abrir el visor modal con navegación circular Anterior/Siguiente.
+2. `PortfolioGallery` separa el contenido con los botones Fotos/Vídeos y muestra dos tarjetas en móvil. Las imágenes usan carga diferida, los vídeos cargan solo su portada y ambos formatos abren un visor modal con navegación circular Anterior/Siguiente y teclado.
 3. El panel permite eliminar individualmente fotos y vídeos importados; para piezas de TikTok aclara que la publicación original no se altera.
 4. Las seis tarjetas manuales siguen admitiendo título, descripción y uno o dos medios. La API comprime el reemplazo, hace upsert y después retira el archivo anterior.
 5. `scripts/import-tiktok-gallery.mjs` valida el manifiesto y los archivos antes de hacer una importación transaccional con deduplicación por ID externo.
@@ -110,6 +110,6 @@ Web comercial mobile first para captar reformas y restauraciones en Barcelona y 
 - 2026-09-08: los medios administrables no pueden vivir en `public`, porque un pull o deploy los perdería.
 - 2026-09-08: los vídeos importados usan portada WebP y `preload="none"`; así una galería extensa no descarga decenas de MP4 al abrir la home.
 - 2026-09-08: las fotos y vídeos reales viven en `/var/www/guille-data/uploads/gallery`; el repositorio solo contiene scripts y metadatos de esquema.
-- 2026-09-08: el hero usa `public/images/hero-guillo.png` con una capa negra uniforme al 20% para mejorar la lectura sin ocultar la imagen.
+- 2026-09-08: el hero usa `public/images/hero-guillo.png` con una capa negra uniforme al 25% para mejorar la lectura sin ocultar la imagen.
 - 2026-09-08: SMTP2GO responde HTTP 200 incluso si el payload informa fallos; `email.ts` comprueba también `data.failed`.
 - 2026-09-08: los documentos privados potencialmente activos se fuerzan a descarga con `nosniff`; solo WebP, MP4 y PDF pueden abrirse inline.
