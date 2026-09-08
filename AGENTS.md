@@ -27,3 +27,4 @@ Web comercial de captación para reformas y restauración en Barcelona y su áre
 - La home debe seguir siendo visible si JavaScript falla. Las animaciones son mejora progresiva y respetan `prefers-reduced-motion`.
 - No mostrar teléfono o WhatsApp si sus variables públicas están vacías.
 - No romper `GET /api/health` ni el guardado de `/api/leads`.
+- La interfaz se diseña mobile first para 390×844; escritorio es una adaptación y no puede degradar el flujo móvil.

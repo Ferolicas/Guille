@@ -1,6 +1,6 @@
 # Mapa del proyecto — Guillo Guambi
 
-Actualizado: 2026-09-07
+Actualizado: 2026-09-08 · Commit: `30013e0`
 
 ## Rutas
 
@@ -29,6 +29,14 @@ Tabla `leads`: identidad de la solicitud, contacto, municipio, servicio, mensaje
 4. PostgreSQL guarda la solicitud.
 5. Si Resend está configurado, se envía aviso; un fallo de correo no elimina el lead.
 
+## Dependencias compartidas
+
+- `src/app/layout.tsx`: metadatos, fuentes y hoja global para todas las rutas.
+- `src/app/globals.css`: tokens y comportamiento responsive; la referencia primaria es móvil 390×844 y escritorio se adapta a partir de ella.
+- `src/components/Brand.tsx`: identidad compartida por cabecera y pie.
+- `src/components/ContactForm.tsx` + `src/lib/lead-schema.ts` + `src/app/api/leads/route.ts`: contrato cliente/servidor del formulario; cualquier campo debe cambiarse en los tres puntos y en sus pruebas.
+- `src/db/schema.ts` + `drizzle/`: fuente del modelo PostgreSQL y migraciones aplicadas durante el despliegue.
+
 ## Infraestructura
 
 - Repo: `Ferolicas/Guille`.
@@ -40,3 +48,7 @@ Tabla `leads`: identidad de la solicitud, contacto, municipio, servicio, mensaje
 ## Variables
 
 Obligatoria: `DATABASE_URL`. Recomendadas: `AUTH_SECRET`, `NEXT_PUBLIC_WHATSAPP_NUMBER`, `NEXT_PUBLIC_PHONE_DISPLAY`, `RESEND_API_KEY`, `CONTACT_TO_EMAIL`, `CONTACT_FROM_EMAIL`.
+
+## Lecciones y gotchas
+
+- 2026-09-08: el hero móvil debe verificarse con viewport real 390×844; alturas mínimas pensadas para escritorio pueden obligar a hacer scroll antes de llegar a la primera sección.
