@@ -21,9 +21,10 @@ Geist para lectura y titulares; Geist Mono para rótulos técnicos, índices y e
 
 - Hero: imagen visible en la mitad superior, copy sobre gradiente inferior y primera pantalla cerrada por la franja de tres especialidades.
 - Tarjetas de diagnóstico y servicio: imagen 4:2.45, índice técnico, copy breve y CTA contextual.
-- Galería: dos tarjetas visibles en móvil, seis slots, snap horizontal y selector Antes/Después.
+- Marca: el logo conserva su PNG original; en el footer aumenta un 10% y su contenedor recorta la línea negra inferior con `overflow: hidden`.
+- Galería: dos tarjetas visibles en móvil, vídeos reales importados y slots manuales, snap horizontal, visor modal y selector Antes/Después cuando corresponda.
 - Modal de valoración: máximo dos pasos, sin scroll a 390×844; progreso naranja, errores inline y confirmación diseñada.
-- Panel: navegación compacta en móvil y lateral en escritorio; seis editores independientes, solicitudes privadas y seguridad.
+- Panel: navegación compacta en móvil y lateral en escritorio; gestión de vídeos importados, seis editores independientes, solicitudes privadas y seguridad.
 
 ## Motion y accesibilidad
 
